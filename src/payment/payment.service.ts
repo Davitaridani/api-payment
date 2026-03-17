@@ -1,30 +1,3 @@
-// import { Injectable } from '@nestjs/common';
-// import { CreatePaymentDto } from './dto/create-payment.dto';
-// import { UpdatePaymentDto } from './dto/update-payment.dto';
-
-// @Injectable()
-// export class PaymentService {
-//   create(createPaymentDto: CreatePaymentDto) {
-//     return 'This action adds a new payment';
-//   }
-
-//   findAll() {
-//     return `This action returns all payment`;
-//   }
-
-//   findOne(id: number) {
-//     return `This action returns a #${id} payment`;
-//   }
-
-//   update(id: number, updatePaymentDto: UpdatePaymentDto) {
-//     return `This action updates a #${id} payment`;
-//   }
-
-//   remove(id: number) {
-//     return `This action removes a #${id} payment`;
-//   }
-// }
-
 import {
   Injectable,
   BadRequestException,
@@ -47,7 +20,6 @@ export class PaymentService {
     private readonly eventEmitter: EventEmitter2,
   ) {}
 
-  // ─── 1. Order Payment ──────────────────────────────────────────────────────
   async createOrder(params: {
     amount: string;
     reff: string;
@@ -105,25 +77,21 @@ export class PaymentService {
     };
   }
 
-  // ─── 2. Payment ────────────────────────────────────────────────────────────
   async processPayment(reff: string) {
-    if (!reff) {
-      throw new ForbiddenException('reff wajib diisi');
-    }
+    // if (!reff) {
+    //   throw new ForbiddenException('reff wajib diisi');
+    // }
 
     const order = await this.orderRepository.findOne({ where: { reff } });
 
-    // Tolak reff tidak dikenal
     if (!order) {
       throw new ForbiddenException('reff tidak ditemukan');
     }
 
-    // Tolak double payment
     if (order.status === 'paid') {
       throw new ForbiddenException('Pembayaran sudah pernah dilakukan');
     }
 
-    // Cek expired
     const expiredDate = new Date(order.expired);
     if (expiredDate <= new Date()) {
       order.status = 'expired';
@@ -138,12 +106,10 @@ export class PaymentService {
       };
     }
 
-    // Tandai paid
     order.status = 'paid';
     order.paid_at = new Date();
     await this.orderRepository.save(order);
 
-    // Emit event async → backup job
     this.eventEmitter.emit(
       'payment.completed',
       new PaymentCompletedEvent(order),
@@ -158,11 +124,10 @@ export class PaymentService {
     };
   }
 
-  // ─── 3. Check Status ───────────────────────────────────────────────────────
   async checkStatus(reff: string) {
-    if (!reff) {
-      throw new ForbiddenException('reff wajib diisi');
-    }
+    // if (!reff) {
+    //   throw new ForbiddenException('reff wajib diisi');
+    // }
 
     const order = await this.orderRepository.findOne({ where: { reff } });
 

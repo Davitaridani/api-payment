@@ -8,7 +8,7 @@ import { Request, Response, NextFunction } from 'express';
 @Injectable()
 export class SecTokenMiddleware implements NestMiddleware {
   use(req: Request, res: Response, next: NextFunction) {
-    const secToken = req.headers['sec-token'] as string;
+    const secToken = req.headers['x-sec-token'] as string;
 
     if (!secToken) {
       throw new UnauthorizedException('Missing Sec-Token header');
